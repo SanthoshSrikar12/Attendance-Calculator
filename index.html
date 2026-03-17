@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendoMate — Smart Attendance Calculator</title>
+    <meta name="description"
+        content="Calculate your college attendance, predict future drops, and manage your timetable with image uploads.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>AttendoMate</h1>
+                    <p class="tagline">Smart Attendance Calculator</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" id="exportBtn" title="Export Data">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button class="btn-icon" id="importBtn" title="Import Data">
+                    <i class="fas fa-upload"></i>
+                </button>
+                <input type="file" id="importFileInput" accept=".json" hidden>
+                <button class="btn-icon" id="resetBtn" title="Reset All Data">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="dashboard">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </button>
+            <button class="tab-btn" data-tab="timetable">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Timetable</span>
+            </button>
+            <button class="tab-btn" data-tab="attendance">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Attendance</span>
+            </button>
+            <button class="tab-btn" data-tab="predictor">
+                <i class="fas fa-calculator"></i>
+                <span>Predictor</span>
+            </button>
+            <button class="tab-btn" data-tab="holidays">
+                <i class="fas fa-umbrella-beach"></i>
+                <span>Holidays</span>
+            </button>
+        </nav>
+
+        <!-- Tab Panels -->
+        <main class="tab-content">
+
+            <!-- ==================== DASHBOARD ==================== -->
+            <section id="dashboard" class="tab-panel active">
+                <div class="panel-header">
+                    <h2><i class="fas fa-chart-pie"></i> Dashboard</h2>
+                    <p class="panel-desc">Your attendance overview at a glance</p>
+                </div>
+
+                <!-- Overall Attendance Ring -->
+                <div class="dashboard-top">
+                    <div class="glass-card overall-card">
+                        <div class="ring-container">
+                            <svg class="progress-ring" viewBox="0 0 160 160">
+                                <circle class="ring-bg" cx="80" cy="80" r="70" />
+                                <circle class="ring-fill" id="overallRing" cx="80" cy="80" r="70" />
+                            </svg>
+                            <div class="ring-label">
+                                <span class="ring-value" id="overallPercent">--</span>
+                                <span class="ring-unit">%</span>
+                            </div>
+                        </div>
+                        <h3>Overall Attendance</h3>
+                        <p class="stat-line" id="overallStat">Upload attendance data to begin</p>
+                    </div>
+
+                    <div class="dashboard-stats">
+                        <div class="glass-card stat-card">
+                            <i class="fas fa-book"></i>
+                            <div>
+                                <span class="stat-num" id="totalSubjects">0</span>
+                                <span class="stat-label">Subjects</span>
+                            </div>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <span class="stat-num" id="totalPresent">0</span>
+                                <span class="stat-label">Present</span>
+                            </div>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <i class="fas fa-layers-alt"></i>
+                            <div>
+                                <span class="stat-num" id="totalClasses">0</span>
+                                <span class="stat-label">Total Classes</span>
+                            </div>
+                        </div>
+                        <div class="glass-card stat-card danger-stat" id="dangerCard">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>
+                                <span class="stat-num" id="dangerCount">0</span>
+                                <span class="stat-label">Below 75%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Per-subject bars -->
+                <div class="glass-card subjects-card" id="subjectBarsCard">
+                    <h3><i class="fas fa-list-ul"></i> Per-Subject Attendance</h3>
+                    <div id="subjectBars" class="subject-bars">
+                        <p class="empty-msg">No attendance data yet. Go to the <strong>Attendance</strong> tab to upload
+                            your data.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== TIMETABLE ==================== -->
+            <section id="timetable" class="tab-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-calendar-alt"></i> Timetable</h2>
+                    <p class="panel-desc">Upload your timetable screenshot to extract schedule</p>
+                </div>
+
+                <!-- Upload Area -->
+                <div class="glass-card upload-card">
+                    <div class="upload-zone" id="timetableUploadZone">
+                        <input type="file" id="timetableFileInput" accept="image/*" hidden>
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Upload Timetable Screenshot</h3>
+                        <p>Drag & drop or click to select an image of your weekly timetable</p>
+                        <button class="btn-primary" id="timetableUploadBtn">
+                            <i class="fas fa-image"></i> Choose Image
+                        </button>
+                    </div>
+                    <!-- OCR Progress -->
+                    <div class="ocr-progress" id="timetableOcrProgress" style="display:none;">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="timetableProgressBar"></div>
+                        </div>
+                        <p id="timetableOcrStatus">Processing image...</p>
+                    </div>
+                </div>
+
+                <!-- Uploaded Image Preview -->
+                <div class="glass-card" id="timetablePreviewCard" style="display:none;">
+                    <h3><i class="fas fa-image"></i> Uploaded Image</h3>
+                    <div class="image-preview">
+                        <img id="timetablePreviewImg" src="" alt="Timetable Preview">
+                    </div>
+                </div>
+
+                <!-- Editable Timetable Grid -->
+                <div class="glass-card" id="timetableGridCard" style="display:none;">
+                    <div class="card-header-row">
+                        <h3><i class="fas fa-table"></i> Extracted Timetable</h3>
+                        <p class="hint-text">Edit cells to correct any OCR errors</p>
+                    </div>
+                    <div class="timetable-scroll">
+                        <table class="timetable-grid" id="timetableGrid">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>08:00–08:50</th>
+                                    <th>09:00–09:50</th>
+                                    <th>10:00–10:50</th>
+                                    <th>11:00–11:50</th>
+                                    <th>12:00–12:50</th>
+                                    <th>13:00–13:50</th>
+                                    <th>14:00–14:50</th>
+                                    <th>15:00–15:50</th>
+                                    <th>16:00–16:50</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timetableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-primary" id="saveTimetableBtn">
+                            <i class="fas fa-save"></i> Save Timetable
+                        </button>
+                        <button class="btn-secondary" id="clearTimetableBtn">
+                            <i class="fas fa-eraser"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manual Add Option -->
+                <div class="glass-card manual-entry-card">
+                    <h3><i class="fas fa-keyboard"></i> Or Enter Manually</h3>
+                    <p>Can't upload? Enter your timetable manually below.</p>
+                    <button class="btn-secondary" id="manualTimetableBtn">
+                        <i class="fas fa-edit"></i> Open Manual Editor
+                    </button>
+                </div>
+            </section>
+
+            <!-- ==================== ATTENDANCE ==================== -->
+            <section id="attendance" class="tab-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-clipboard-check"></i> Attendance</h2>
+                    <p class="panel-desc">Upload your attendance screenshot to extract data</p>
+                </div>
+
+                <!-- Upload Area -->
+                <div class="glass-card upload-card">
+                    <div class="upload-zone" id="attendanceUploadZone">
+                        <input type="file" id="attendanceFileInput" accept="image/*" hidden>
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Upload Attendance Screenshot</h3>
+                        <p>Upload your college portal's attendance page screenshot</p>
+                        <button class="btn-primary" id="attendanceUploadBtn">
+                            <i class="fas fa-image"></i> Choose Image
+                        </button>
+                    </div>
+                    <!-- OCR Progress -->
+                    <div class="ocr-progress" id="attendanceOcrProgress" style="display:none;">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="attendanceProgressBar"></div>
+                        </div>
+                        <p id="attendanceOcrStatus">Processing image...</p>
+                    </div>
+                </div>
+
+                <!-- Uploaded Image Preview -->
+                <div class="glass-card" id="attendancePreviewCard" style="display:none;">
+                    <h3><i class="fas fa-image"></i> Uploaded Image</h3>
+                    <div class="image-preview">
+                        <img id="attendancePreviewImg" src="" alt="Attendance Preview">
+                    </div>
+                </div>
+
+                <!-- Editable Attendance Table -->
+                <div class="glass-card" id="attendanceTableCard" style="display:none;">
+                    <div class="card-header-row">
+                        <h3><i class="fas fa-table"></i> Extracted Attendance</h3>
+                        <p class="hint-text">Edit values to correct any OCR errors</p>
+                    </div>
+                    <table class="attendance-table" id="attendanceTable">
+                        <thead>
+                            <tr>
+                                <th>Subject Code</th>
+                                <th>Subject Name</th>
+                                <th>Present</th>
+                                <th>Total</th>
+                                <th>Percentage</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceBody">
+                        </tbody>
+                    </table>
+                    <div class="card-actions">
+                        <button class="btn-primary" id="saveAttendanceBtn">
+                            <i class="fas fa-save"></i> Save Attendance
+                        </button>
+                        <button class="btn-secondary" id="addSubjectBtn">
+                            <i class="fas fa-plus"></i> Add Subject
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manual Entry -->
+                <div class="glass-card manual-entry-card">
+                    <h3><i class="fas fa-keyboard"></i> Or Enter Manually</h3>
+                    <p>Add subjects one by one with their attendance data.</p>
+                    <button class="btn-secondary" id="manualAttendanceBtn">
+                        <i class="fas fa-edit"></i> Open Manual Editor
+                    </button>
+                </div>
+            </section>
+
+            <!-- ==================== PREDICTOR ==================== -->
+            <section id="predictor" class="tab-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-calculator"></i> Attendance Predictor</h2>
+                    <p class="panel-desc">See how your attendance drops if you miss a day</p>
+                </div>
+
+                <div class="predictor-grid">
+                    <!-- Drop Predictor -->
+                    <div class="predictor-card glass-card">
+                        <div class="card-header-icon">
+                            <i class="fas fa-arrow-down"></i>
+                            <h3>Attendance Drop</h3>
+                        </div>
+                        <p class="card-subtitle">Select a day to see the drop if you miss classes</p>
+                        <div class="day-selector" id="dropDaySelector">
+                            <button class="day-btn" data-day="Monday">Mon</button>
+                            <button class="day-btn" data-day="Tuesday">Tue</button>
+                            <button class="day-btn" data-day="Wednesday">Wed</button>
+                            <button class="day-btn" data-day="Thursday">Thu</button>
+                            <button class="day-btn" data-day="Friday">Fri</button>
+                        </div>
+                    </div>
+
+                    <!-- Boost Predictor -->
+                    <div class="predictor-card glass-card">
+                        <div class="card-header-icon">
+                            <i class="fas fa-rocket"></i>
+                            <h3>Attendance Booster</h3>
+                        </div>
+                        <p class="card-subtitle">Predict gains by attending consecutive days</p>
+                        <div class="booster-controls">
+                            <div class="form-group">
+                                <label>Starting From:</label>
+                                <input type="date" id="boostStartDate" class="input-field">
+                            </div>
+                            <div class="form-group">
+                                <label>Days to Attend:</label>
+                                <input type="number" id="boostCount" min="1" max="30" value="4" class="input-field">
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="calculateBoostBtn">
+                            <i class="fas fa-magic"></i> Calculate Gain
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Prediction Results -->
+                <div class="glass-card prediction-results" id="predictionResults" style="display:none;">
+                    <div class="prediction-header">
+                        <h3><i class="fas fa-chart-line"></i> Prediction Results</h3>
+                        <div class="prediction-summary">
+                            <div class="pred-stat">
+                                <span class="pred-label">Current Overall</span>
+                                <span class="pred-value" id="predCurrent">--%</span>
+                            </div>
+                            <div class="pred-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="pred-stat drop">
+                                <span class="pred-label">After Skipping</span>
+                                <span class="pred-value" id="predNew">--%</span>
+                            </div>
+                            <div class="pred-stat">
+                                <span class="pred-label">Drop</span>
+                                <span class="pred-value danger" id="predDrop">--%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4>Per-Subject Breakdown</h4>
+                    <div id="predictionBreakdown" class="prediction-breakdown">
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="glass-card" id="predictorEmpty">
+                    <div class="empty-state">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Upload your <strong>timetable</strong> and <strong>attendance data</strong> first, then
+                            select a day to see predictions.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== HOLIDAYS ==================== -->
+            <section id="holidays" class="tab-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-umbrella-beach"></i> Holidays</h2>
+                    <p class="panel-desc">Mark holidays to exclude from predictions</p>
+                </div>
+
+                <div class="glass-card holiday-form-card">
+                    <h3><i class="fas fa-plus-circle"></i> Add Holiday</h3>
+                    <div class="holiday-form">
+                        <div class="form-group">
+                            <label for="holidayDate">Date</label>
+                            <input type="date" id="holidayDate" class="input-field">
+                        </div>
+                        <div class="form-group">
+                            <label for="holidayName">Holiday Name (optional)</label>
+                            <input type="text" id="holidayName" class="input-field" placeholder="e.g. Republic Day">
+                        </div>
+                        <button class="btn-primary" id="addHolidayBtn">
+                            <i class="fas fa-plus"></i> Add Holiday
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Holidays List -->
+                <div class="glass-card">
+                    <h3><i class="fas fa-list"></i> Marked Holidays</h3>
+                    <div id="holidaysList" class="holidays-list">
+                        <p class="empty-msg">No holidays marked yet.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Tesseract.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
